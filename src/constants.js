@@ -1,5 +1,5 @@
 export const W = 1680;
-export const H = 500;
+export const H = 1200;
 export const Z = 2;
 
 export const SKY_COLORS = [
