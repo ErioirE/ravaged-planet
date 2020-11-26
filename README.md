@@ -1,8 +1,9 @@
 # Ravaged Planet
 
 A modern [Scorched Earth](https://en.wikipedia.org/wiki/Scorched_Earth_(video_game)) clone.
+This version has a shop WIP. I am updating this game as part of a Computer Science final project.
 
-[Play it for free on itch.io](https://pastry.itch.io/ravaged-planet)
+To play: Download as zip and open index.html with browser.
 
 ![A screenshot of the game](docs/screenshot.png)
 
