@@ -4,16 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scorched Earth</title>
+  <link rel="stylesheet" href="bootstrap.min.css">
   <style>
     * {box-sizing: border-box}
     html, body {padding: 0; margin: 0}
     body {background: black; height:100vh; overflow: hidden}
-    canvas {image-rendering: pixelated; margin: auto;
-            position:absolute; left:0; right:0; top:0; bottom:0}
+    canvas {image-rendering: pixelated; margin: none;
+            position:absolute; left:0; right:0; top:100; bottom:0}
     @font-face { font-family: 'text'; src:url(assets/font.ttf) }
   </style>
+
+  <script src="bootstrap-native-v4.min.js">
+  </script>
+    <script type="module" src="src/main.js"></script>
+    <script type="module">
+      import { shop } from './src/main.js';
+      globalThis.caller = function (){
+      shop();
+      }
+    </script>
 </head>
 <body>
-  <script type="module" src="src/main.js"></script>
+  <div style="box-sizing: border-box; position: fixed; z-index: 10;">
+    <button type="button" onclick="globalThis.caller()" class="btn btn-primary" data-toggle="button">Press me.</button>
+    </div>
 </body>
 </html>

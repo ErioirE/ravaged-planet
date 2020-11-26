@@ -121,8 +121,10 @@ export function drawSemiCircle(ctx, x, y, r, color) {
 /** @param align {CanvasTextAlign} */
 /** @param baseline {CanvasTextBaseline} */
 export function drawText(ctx, text, x, y, color, align='left', baseline='top') {
-  x = Math.round(x); y = Math.round(y);
-  ctx.font = '5px text';
+    x = Math.round(x); y = Math.round(y);
+    let fontsize = FONT_HEIGHT
+  //alert(Math.ceil(fontsize))
+  ctx.font = `${fontsize}px text`;
   ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
   ctx.fillStyle = color;

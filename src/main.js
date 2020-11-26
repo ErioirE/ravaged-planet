@@ -1,5 +1,5 @@
 import {AI_TYPES} from './ai.js';
-import {DEATH_SPECS, EXPLOSION_SHAKE_REDUCTION_FACTOR, H, MAX_EXPLOSION_SHAKE_FACTOR, MAX_WIND, PARTICLE_AMOUNT, PARTICLE_FADE_AMOUNT, PARTICLE_MAX_POWER_FACTOR, PARTICLE_MIN_LIFETIME, PARTICLE_MIN_POWER_FACTOR, PARTICLE_POWER_REDUCTION_FACTOR, PARTICLE_TIME_FACTOR, PARTICLE_WIND_REDUCTION_FACTOR, PLAYER_ANGLE_FAST_INCREMENT, PLAYER_ANGLE_INCREMENT, PLAYER_ANGLE_TICK_SOUND_INTERVAL, PLAYER_COLORS, PLAYER_ENERGY_POWER_MULTIPLIER, PLAYER_EXPLOSION_PARTICLE_POWER, PLAYER_FALL_DAMAGE_FACTOR, PLAYER_FALL_DAMAGE_HEIGHT, PLAYER_INITIAL_POWER, PLAYER_MAX_ENERGY, PLAYER_POWER_FAST_INCREMENT, PLAYER_POWER_INCREMENT, PLAYER_POWER_TICK_SOUND_INTERVAL, PLAYER_STARTING_TOOLS, PLAYER_STARTING_WEAPONS, PLAYER_TANK_BOUNDING_RADIUS, PLAYER_TANK_Y_FOOTPRINT, SHIELD_TYPES, TRAJECTORY_FADE_SPEED, TRAJECTORY_FLOAT_SPEED, W, WEAPON_TYPES, Z} from './constants.js';
+import {DEATH_SPECS, EXPLOSION_SHAKE_REDUCTION_FACTOR, H, MAX_EXPLOSION_SHAKE_FACTOR, MAX_WIND, PARTICLE_AMOUNT, PARTICLE_FADE_AMOUNT, PARTICLE_MAX_POWER_FACTOR, PARTICLE_MIN_LIFETIME, PARTICLE_MIN_POWER_FACTOR, PARTICLE_POWER_REDUCTION_FACTOR, PARTICLE_TIME_FACTOR, PARTICLE_WIND_REDUCTION_FACTOR, PLAYER_ANGLE_FAST_INCREMENT, PLAYER_ANGLE_INCREMENT, PLAYER_ANGLE_TICK_SOUND_INTERVAL, PLAYER_COLORS, PLAYER_ENERGY_POWER_MULTIPLIER, PLAYER_EXPLOSION_PARTICLE_POWER, PLAYER_FALL_DAMAGE_FACTOR, PLAYER_FALL_DAMAGE_HEIGHT, PLAYER_INITIAL_POWER, PLAYER_MAX_ENERGY, PLAYER_POWER_FAST_INCREMENT, PLAYER_POWER_INCREMENT, PLAYER_POWER_TICK_SOUND_INTERVAL, PLAYER_STARTING_MONEY, PLAYER_STARTING_TOOLS, PLAYER_STARTING_WEAPONS, PLAYER_TANK_BOUNDING_RADIUS, PLAYER_TANK_Y_FOOTPRINT, SHIELD_TYPES, TRAJECTORY_FADE_SPEED, TRAJECTORY_FLOAT_SPEED, W, WEAPON_TYPES, Z} from './constants.js';
 import {createCanvas, drawLine, drawRect, drawSemiCircle, drawText, loop, plot, strokeCircle} from './gfx.js';
 import {afterKeyDelay, key} from './input.js';
 import {clamp, deg2rad, distance, parable, random, randomInt, vec, wrap} from './math.js';
@@ -22,6 +22,8 @@ let screenShake = 0;
 let trajectories = [];
 let idle = false;
 let winner;
+let turn = 0;
+let round = 1;
 
 // Music
 // const music = createAudioLoop('assets/battle.mp3');
@@ -34,8 +36,8 @@ const foreground = createCanvas(W, H);
 
 // Composited layer
 const framebuffer = createCanvas(W, H);
-framebuffer.canvas.style.width = `${W * Z}px`;
-framebuffer.canvas.style.height = `${H * Z}px`;
+framebuffer.canvas.style.width = `${W}px`;
+framebuffer.canvas.style.height = `${H}px`;
 document.body.appendChild(framebuffer.canvas);
 
 function init() {
@@ -54,6 +56,84 @@ function init() {
   initLevel();
   initPlayers();
 }
+var container = document.createElement("div")
+export function shop() {
+
+  const player = players[currentPlayer];
+  if(player.money > 1874 && turn <= players.length)
+  {
+    if(container.style.display != "block"){  
+    refreshShop(container,player);
+    }
+  }  
+  else{
+    container.style.display = "none";
+    state = "end-turn"
+  }
+  
+}
+function refreshShop(container,player){
+  const {a, p, weapons, currentWeapon} = player;
+    const weapon = weapons[currentWeapon];  
+    container.innerHTML="";
+    container.style.display="block"
+    container.style.fontFamily="./assets/font.ttf"
+    container.style.position="fixed";
+    container.style.zIndex="10";
+    container.style.width="900px";
+    container.style.padding="20px";
+    container.style.backgroundColor="#303030";
+    container.innerHTML = `<div style=\"font-size: 30px; color: gold\">${player.name} SHOP - Money: ${player.money}</div>`;
+    weapon.ammo += 1;
+    var table = document.createElement("TABLE");
+    table.style.position = "relative";
+    table.style.zIndex = "11";
+    table.style.width = "600px"
+    table.classList.add("table")
+    table.classList.add("table-dark")
+    var labels = table.insertRow(0);
+    var labelcell0 = labels.insertCell(0);
+    var labelcell1 = labels.insertCell(1);
+    var labelcell2 = labels.insertCell(2);
+    var labelcell3 = labels.insertCell(3);
+    labelcell0.innerHTML = "Weapon:";
+    labelcell1.innerHTML = "Bundle size:";
+    labelcell2.innerHTML = "Price:";
+    labelcell3.innerHTML = "Inventory:";
+    
+    container.appendChild(table);
+    Object.keys(WEAPON_TYPES).forEach(element => {
+      if(player.money >= WEAPON_TYPES[element].cost){
+      var currentAmmo = getCurrentAmmo(element,weapons);
+      var row = table.insertRow(-1);
+      row.width = table.width;
+      row.classList.add("btn");
+      row.classList.add("btn-primary");
+      row.style.display="table-row";
+      row.type="button";
+      var cell0 = row.insertCell(0);
+      var cell1 = row.insertCell(1);
+      var cell2 = row.insertCell(2);
+      var cell3 = row.insertCell(3);
+      cell0.innerHTML = WEAPON_TYPES[element].name;
+      cell1.innerHTML = WEAPON_TYPES[element].bundle;
+      cell2.innerHTML = WEAPON_TYPES[element].cost;
+      cell3.innerHTML = getCurrentAmmo(element,weapons);
+        row.onclick = function(){
+          currentAmmo = getCurrentAmmo(element,weapons);
+          if(currentAmmo==0){
+            player.weapons.push({type:element,ammo:WEAPON_TYPES[element].bundle});
+          }
+          else if(currentAmmo != "Infinity" && currentAmmo >0){
+            weapons[getCurrentWeaponIndex(element,weapons)]["ammo"] += WEAPON_TYPES[element].bundle
+          }
+          player.money -= WEAPON_TYPES[element].cost
+          refreshShop(container,player);
+        };
+      }
+    });
+    document.body.appendChild(container);
+} 
 
 function initPlayers() {
   for (let i=0; i<PLAYER_COLORS.length; i++) {
@@ -72,6 +152,7 @@ function initPlayers() {
       ai: i !== 0 ? sample(Object.keys(AI_TYPES)) : undefined,
       parachute: null,
       fallHeight: 0,
+      money: PLAYER_STARTING_MONEY,
     });
   }
 
@@ -102,9 +183,18 @@ function update() {
     init();
     state = 'start-turn';
   }
+  else if (state === "shop"){
+    shop();
+  }
 
   else if (state === 'start-turn') {
-    state = 'aim';
+    if(turn <= players.length){    
+    shop();
+    state = 'shop';
+    }
+    else{
+      state = 'aim';
+    }
   }
 
   else if (state === 'aim') {
@@ -293,6 +383,7 @@ function update() {
     }
 
     fadeTrajectories();
+    turn ++;
     state = 'start-turn';
   }
 
@@ -525,3 +616,32 @@ loop(() => {
   update();
   draw();
 });
+
+function getCurrentAmmo(id,currentWeapons){
+  let result = "0";
+  currentWeapons.forEach(element => {
+    if(element.type === id)
+    {
+      if(element.ammo === Infinity){
+        result = "Infinity";
+      }
+      else{
+        result = element.ammo;
+      }
+    }
+  });
+  return result;
+}
+function getCurrentWeaponIndex(id,currentWeapons){
+  let result = 0;
+  let index = 0;
+  currentWeapons.forEach(element => {
+    if(element.type === id)
+    {
+      result = index
+    }
+    index ++;
+  });
+  return result;
+}
+
