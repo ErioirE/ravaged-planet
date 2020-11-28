@@ -1,5 +1,5 @@
-export const W = 1680;
-export const H = 1200;
+export const W = 1920;
+export const H = 900;
 export const Z = 2;
 
 export const SKY_COLORS = [
@@ -23,28 +23,27 @@ export const PLAYER_COLORS = [
 ];
 export const PLAYER_STARTING_WEAPONS = [
   {type: 'babyMissile', ammo:Infinity},
-  {type: 'tracer', ammo:Infinity},
 ]
-
+export const WEAPONSCALE = 2.00;
 export const WEAPON_TYPES = {
-  tracer: {id:'tracer', name:'Tracer', projectile:{type:'normal'}, explosion:{type:'tracer'},cost:0,bundle:"Infinity"},
-  babyMissile: {id:'babyMissile', name:'Baby Missile', projectile:{type:'normal'}, explosion:{type:'blast', r:5},cost:0,bundle:"Infinity"},
-  missile: {id:'missile', name:'Missile', projectile:{type:'normal'}, explosion:{type:'blast', r:20},cost:1875,bundle:5},
-  babyNuke: {id:'babyNuke', name:'Baby Nuke', projectile:{type:'normal'}, explosion:{type:'blast', r:50},cost:10000,bundle:3},
-  nuke: {id:'nuke', name:'Nuke', projectile:{type:'normal'}, explosion:{type:'blast', r:100},cost:12000,bundle:1},
-  babyRoller: {id:'babyRoller', name:'Baby Roller', projectile:{type:'roller'}, explosion:{type:'blast', r:15},cost:5000,bundle:10},
-  roller: {id:'roller', name:'Roller', projectile:{type:'roller'}, explosion:{type:'blast', r:35},cost:6000,bundle:5},
-  superRoller: {id:'superRoller', name:'Super Roller', projectile:{type:'roller'}, explosion:{type:'blast', r:60},cost:6750,bundle:2},
-  leapfrog: {id:'leapfrog', name:'Leapfrog', projectile:{type:'leapfrog', n:3, s:10}, explosion:{type:'blast', r:35},cost:10000,bundle:2},
-  superLeapfrog: {id:'superLeapfrog', name:'Super Leapfrog', projectile:{type:'leapfrog', n:6, s:10}, explosion:{type:'blast', r:50},cost:12000,bundle:1},
-  mirv: {id:'mirv', name:'MIRV', projectile:{type:'mirv', n:3, s:8}, explosion:{type:'blast', r:35},cost:10000,bundle:3},
-  xmirv: {id:'xmirv', name:'X-MIRV', projectile:{type:'mirv', n:5, s:8}, explosion:{type:'blast', r:45},cost:20000,bundle:1},
-  smallDirt: {id:'smallDirt', name:'Small Dirt', projectile:{type:'normal'}, explosion:{type:'dirt', r:25},cost:5000,bundle:10},
-  dirt: {id:'dirt', name:'Dirt', projectile:{type:'normal'}, explosion:{type:'dirt', r:50},cost:5000,bundle:5},
-  largeDirt: {id:'largeDirt', name:'Ton of Dirt', projectile:{type:'normal'}, explosion:{type:'dirt', r:75},cost:6750,bundle:2},
-  smallDigBomb: {id:'smallDigBomb', name:'Small Dig Bomb', projectile:{type:'normal'}, explosion:{type:'digBomb', r:25},cost:5000,bundle:10},
-  digBomb: {id:'digBomb', name:'Dig Bomb', projectile:{type:'normal'}, explosion:{type:'digBomb', r:50},cost:5000,bundle:5},
-  largeDigBomb: {id:'largeDigBomb', name:'Large Dig Bomb', projectile:{type:'normal'}, explosion:{type:'digBomb', r:75},cost:6750,bundle:2},
+  //tracer: {id:'tracer', name:'Tracer', projectile:{type:'normal'}, explosion:{type:'tracer'},cost:0,bundle:"Infinity"},
+  babyMissile: {id:'babyMissile', name:'Baby Missile', projectile:{type:'normal'}, explosion:{type:'blast', r:WEAPONSCALE*6},cost:0,bundle:"Infinity"},
+  missile: {id:'missile', name:'Missile', projectile:{type:'normal'}, explosion:{type:'blast', r:WEAPONSCALE*20},cost:1875,bundle:5},
+  babyNuke: {id:'babyNuke', name:'Baby Nuke', projectile:{type:'normal'}, explosion:{type:'blast', r:WEAPONSCALE*50},cost:10000,bundle:3},
+  nuke: {id:'nuke', name:'Nuke', projectile:{type:'normal'}, explosion:{type:'blast', r:WEAPONSCALE*100},cost:12000,bundle:1},
+  babyRoller: {id:'babyRoller', name:'Baby Roller', projectile:{type:'roller'}, explosion:{type:'blast', r:WEAPONSCALE*15},cost:5000,bundle:10},
+  roller: {id:'roller', name:'Roller', projectile:{type:'roller'}, explosion:{type:'blast', r:WEAPONSCALE*35},cost:6000,bundle:5},
+  superRoller: {id:'superRoller', name:'Super Roller', projectile:{type:'roller'}, explosion:{type:'blast', r:WEAPONSCALE*60},cost:6750,bundle:2},
+  leapfrog: {id:'leapfrog', name:'Leapfrog', projectile:{type:'leapfrog', n:3, s:10}, explosion:{type:'blast', r:WEAPONSCALE*35},cost:10000,bundle:2},
+  superLeapfrog: {id:'superLeapfrog', name:'Super Leapfrog', projectile:{type:'leapfrog', n:6, s:10}, explosion:{type:'blast', r:WEAPONSCALE*50},cost:12000,bundle:1},
+  mirv: {id:'mirv', name:'MIRV', projectile:{type:'mirv', n:3, s:8}, explosion:{type:'blast', r:WEAPONSCALE*35},cost:10000,bundle:3},
+  xmirv: {id:'xmirv', name:'X-MIRV', projectile:{type:'mirv', n:5, s:8}, explosion:{type:'blast', r:WEAPONSCALE*45},cost:20000,bundle:1},
+  smallDirt: {id:'smallDirt', name:'Small Dirt', projectile:{type:'normal'}, explosion:{type:'dirt', r:WEAPONSCALE*25},cost:5000,bundle:10},
+  dirt: {id:'dirt', name:'Dirt', projectile:{type:'normal'}, explosion:{type:'dirt', r:WEAPONSCALE*50},cost:5000,bundle:5},
+  largeDirt: {id:'largeDirt', name:'Ton of Dirt', projectile:{type:'normal'}, explosion:{type:'dirt', r:WEAPONSCALE*75},cost:6750,bundle:2},
+  smallDigBomb: {id:'smallDigBomb', name:'Small Dig Bomb', projectile:{type:'normal'}, explosion:{type:'digBomb', r:WEAPONSCALE*25},cost:5000,bundle:10},
+  digBomb: {id:'digBomb', name:'Dig Bomb', projectile:{type:'normal'}, explosion:{type:'digBomb', r:WEAPONSCALE*50},cost:5000,bundle:5},
+  largeDigBomb: {id:'largeDigBomb', name:'Large Dig Bomb', projectile:{type:'normal'}, explosion:{type:'digBomb', r:WEAPONSCALE*75},cost:6750,bundle:2},
 };
 
 export const SHIELD_TYPES = {
@@ -91,7 +90,7 @@ export const PLAYER_POWER_INCREMENT = 1;
 export const PLAYER_POWER_FAST_INCREMENT = 10;
 export const PLAYER_ANGLE_TICK_SOUND_INTERVAL = 2;
 export const PLAYER_POWER_TICK_SOUND_INTERVAL = 2;
-export const PLAYER_STARTING_MONEY = 10000;
+export const PLAYER_STARTING_MONEY = 60000;
 
 export const PROJECTILE_POWER_REDUCTION_FACTOR = 10;
 export const PROJECTILE_WIND_REDUCTION_FACTOR = 10;
@@ -119,3 +118,9 @@ export const FONT_HEIGHT = Math.ceil(5*(H/400));
 
 export const SOUND_MUSIC_VOLUME = 0.3;
 export const SOUND_SFX_VOLUME = 0.1;
+
+export const TOTAL_ROUNDS = 5;
+export const PRIZE_FIRST_PLACE = 20000;
+export const PRIZE_SECOND_PLACE = 10000;
+export const PRIZE_THIRD_PLACE = 7500;
+export const MINMONEY = 5000;

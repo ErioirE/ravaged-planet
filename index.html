@@ -5,28 +5,75 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scorched Earth</title>
   <link rel="stylesheet" href="bootstrap.min.css">
+  <script src="bootstrap-native-v4.min.js"></script>
   <style>
+    @font-face { font-family: 'text'; src:url(assets/font.ttf) }
     * {box-sizing: border-box}
     html, body {padding: 0; margin: 0}
     body {background: black; height:100vh; overflow: hidden}
     canvas {image-rendering: pixelated; margin: none;
-            position:absolute; left:0; right:0; top:100; bottom:0}
-    @font-face { font-family: 'text'; src:url(assets/font.ttf) }
+            position:relative; left:0; right:0; top:0; bottom:0
+    }    
+    .btn-primary{
+      background-color: grey;
+      color: black;
+    }
+    .btn-primary:hover{
+      border-color: white;
+      background-color: grey;
+      color:black;
+    }
+    .table th,.table td{
+      border-top:3px solid #444;
+      border-bottom:3px solid #444;
+      border-left:3px solid #444;
+      border-right:3px solid #444;
+      border-color: #42403a;
+      padding:3px;
+    }
+    table{
+      border-collapse: separate;
+      border-spacing: 2px;
+      width: 90%;
+    }
+    .btnspec .btn-primary td{
+    padding-top:2px;
+    padding-bottom: 2px;
+    padding-left: 3px;
+    padding-right: 3px;
+    border-width: 3px;
+    border-left-width: 3px;
+    border-right-width: 3px;
+    border-color: #42403a;
+    margin-top: 3px;
+    }
+    tr.btn-primary:hover td{
+      border-style: groove;
+      border-color:lightgray;
+    }
+    
+    td.tableheadings{
+    border-collapse: unset;
+    border-width: 3px;
+    border-color: black;
+    border-style: solid;
+    margin-bottom: 3px;
+    }
   </style>
 
-  <script src="bootstrap-native-v4.min.js">
+
   </script>
     <script type="module" src="src/main.js"></script>
     <script type="module">
-      import { shop } from './src/main.js';
+      import { debug } from './src/main.js';
       globalThis.caller = function (){
-      shop();
+      debug();
       }
     </script>
 </head>
-<body>
-  <div style="box-sizing: border-box; position: fixed; z-index: 10;">
-    <!--<button type="button" onclick="globalThis.caller()" class="btn btn-primary" data-toggle="button">Press me.</button>-->
+<body style="overflow: auto;">
+  <div style="box-sizing: border-box; position: relative; z-index: 10;">
+    
     </div>
 </body>
 </html>

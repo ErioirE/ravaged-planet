@@ -1,5 +1,5 @@
 import {AI_TYPES} from './ai.js';
-import {DEATH_SPECS, EXPLOSION_SHAKE_REDUCTION_FACTOR, H, MAX_EXPLOSION_SHAKE_FACTOR, MAX_WIND, PARTICLE_AMOUNT, PARTICLE_FADE_AMOUNT, PARTICLE_MAX_POWER_FACTOR, PARTICLE_MIN_LIFETIME, PARTICLE_MIN_POWER_FACTOR, PARTICLE_POWER_REDUCTION_FACTOR, PARTICLE_TIME_FACTOR, PARTICLE_WIND_REDUCTION_FACTOR, PLAYER_ANGLE_FAST_INCREMENT, PLAYER_ANGLE_INCREMENT, PLAYER_ANGLE_TICK_SOUND_INTERVAL, PLAYER_COLORS, PLAYER_ENERGY_POWER_MULTIPLIER, PLAYER_EXPLOSION_PARTICLE_POWER, PLAYER_FALL_DAMAGE_FACTOR, PLAYER_FALL_DAMAGE_HEIGHT, PLAYER_INITIAL_POWER, PLAYER_MAX_ENERGY, PLAYER_POWER_FAST_INCREMENT, PLAYER_POWER_INCREMENT, PLAYER_POWER_TICK_SOUND_INTERVAL, PLAYER_STARTING_MONEY, PLAYER_STARTING_TOOLS, PLAYER_STARTING_WEAPONS, PLAYER_TANK_BOUNDING_RADIUS, PLAYER_TANK_Y_FOOTPRINT, SHIELD_TYPES, TRAJECTORY_FADE_SPEED, TRAJECTORY_FLOAT_SPEED, W, WEAPON_TYPES, Z} from './constants.js';
+import {DEATH_SPECS, EXPLOSION_SHAKE_REDUCTION_FACTOR, H, MAX_EXPLOSION_SHAKE_FACTOR, MAX_WIND, MINMONEY, PARTICLE_AMOUNT, PARTICLE_FADE_AMOUNT, PARTICLE_MAX_POWER_FACTOR, PARTICLE_MIN_LIFETIME, PARTICLE_MIN_POWER_FACTOR, PARTICLE_POWER_REDUCTION_FACTOR, PARTICLE_TIME_FACTOR, PARTICLE_WIND_REDUCTION_FACTOR, PLAYER_ANGLE_FAST_INCREMENT, PLAYER_ANGLE_INCREMENT, PLAYER_ANGLE_TICK_SOUND_INTERVAL, PLAYER_COLORS, PLAYER_ENERGY_POWER_MULTIPLIER, PLAYER_EXPLOSION_PARTICLE_POWER, PLAYER_FALL_DAMAGE_FACTOR, PLAYER_FALL_DAMAGE_HEIGHT, PLAYER_INITIAL_POWER, PLAYER_MAX_ENERGY, PLAYER_POWER_FAST_INCREMENT, PLAYER_POWER_INCREMENT, PLAYER_POWER_TICK_SOUND_INTERVAL, PLAYER_STARTING_MONEY, PLAYER_STARTING_TOOLS, PLAYER_STARTING_WEAPONS, PLAYER_TANK_BOUNDING_RADIUS, PLAYER_TANK_Y_FOOTPRINT, PRIZE_FIRST_PLACE, PRIZE_SECOND_PLACE, PRIZE_THIRD_PLACE, SHIELD_TYPES, TOTAL_ROUNDS, TRAJECTORY_FADE_SPEED, TRAJECTORY_FLOAT_SPEED, W, WEAPON_TYPES, Z} from './constants.js';
 import {createCanvas, drawLine, drawRect, drawSemiCircle, drawText, loop, plot, strokeCircle} from './gfx.js';
 import {afterKeyDelay, key} from './input.js';
 import {clamp, deg2rad, distance, parable, random, randomInt, vec, wrap} from './math.js';
@@ -9,6 +9,7 @@ import {playTickSound} from './sound.js';
 import {clipTerrain, closestLand, collapseTerrain, generateTerrain, isTerrain, landHeight} from './terrain.js';
 import {sample, shuffle} from './utils.js';
 import {EXPLOSION_TYPES} from './weapons.js';
+
 
 
 let state = 'start-game';
@@ -22,9 +23,11 @@ let screenShake = 0;
 let trajectories = [];
 let idle = false;
 let winner;
-let turn = 0;
+let turn;
 let round = 1;
+let deathorder = [];
 
+let hasShoppedThisRound = false;
 // Music
 // const music = createAudioLoop('assets/battle.mp3');
 
@@ -40,9 +43,11 @@ framebuffer.canvas.style.width = `${W}px`;
 framebuffer.canvas.style.height = `${H}px`;
 document.body.appendChild(framebuffer.canvas);
 
+
 function init() {
+  hideLayers();
   state = 'start-game';
-  players = [];
+  turn = 1 - PLAYER_COLORS.length;
   currentPlayer = 0;
   projectiles = [];
   explosions = [];
@@ -52,25 +57,52 @@ function init() {
   idle = false;
   winner = null;
   wind = randomInt(-MAX_WIND, +MAX_WIND);
-
   initLevel();
-  initPlayers();
+  if(round === 1){
+    players = [];
+    initPlayers();
+  }
+  else{
+    //alert(players);
+    initRound();
+  }
+  counter.innerHTML=`Round: ${round}, Turn: ${turn}`;
 }
-var container = document.createElement("div")
+let container = document.createElement("div");
+let counter = document.createElement("div");
+function hideLayers(){
+  document.body.innerHTML = "";
+  document.body.appendChild(container);
+}
+function showLayers(){
+document.body.innerHTML = "";
+document.body.appendChild(framebuffer.canvas);
+document.body.appendChild(counter);
+document.body.appendChild(debugButton);
+}
 export function shop() {
 
   const player = players[currentPlayer];
-  if(player.money > 1874 && turn <= players.length)
+  if(player.money > 1874 && turn <= 0 && !player.ai)
   {
-    if(container.style.display != "block"){  
+    if( !hasShoppedThisRound){  
     refreshShop(container,player);
     }
   }  
   else{
-    container.style.display = "none";
-    state = "end-turn"
+    doneShopping();
   }
   
+}
+function doneShopping(){
+  state = "end-turn";
+}
+let debugButton = document.createElement("BUTTON");
+document.body.appendChild(debugButton);
+debugButton.classList.add("btn");
+debugButton.innerText="DEBUGKILl";
+debugButton.onclick= function() {
+  debug();
 }
 function refreshShop(container,player){
   const {a, p, weapons, currentWeapon} = player;
@@ -80,45 +112,70 @@ function refreshShop(container,player){
     container.style.fontFamily="./assets/font.ttf"
     container.style.position="fixed";
     container.style.zIndex="10";
-    container.style.width="900px";
-    container.style.padding="20px";
+    container.style.width="100%";
+    container.style.height="100%";
+    container.style.padding="10px";
+    container.style.overflow="auto";
     container.style.backgroundColor="#303030";
-    container.innerHTML = `<div style=\"font-size: 30px; color: gold\">${player.name} SHOP - Money: ${player.money}</div>`;
-    weapon.ammo += 1;
-    var table = document.createElement("TABLE");
+    container.innerHTML = `<div style=\"margin:auto;width: 80%;\"><div style=\"margin-left:3px;width:max-content;font-size: 26px;\">ROUND ${round}</div><br><div style=\"margin-left:3px;font-size: 20px;\"> ${player.name} SHOP - Money: <span style=\"color: gold\">${player.money}</span></div></div>`;
+    let table = document.createElement("TABLE");
     table.style.position = "relative";
     table.style.zIndex = "11";
-    table.style.width = "600px"
+    table.style.width = "80%"
+    table.style.margin="auto";
     table.classList.add("table")
     table.classList.add("table-dark")
-    var labels = table.insertRow(0);
-    var labelcell0 = labels.insertCell(0);
-    var labelcell1 = labels.insertCell(1);
-    var labelcell2 = labels.insertCell(2);
-    var labelcell3 = labels.insertCell(3);
-    labelcell0.innerHTML = "Weapon:";
-    labelcell1.innerHTML = "Bundle size:";
-    labelcell2.innerHTML = "Price:";
-    labelcell3.innerHTML = "Inventory:";
-    
+    let labels = table.insertRow(0);
+    let childcount = 0;
+    let labelcells =[
+    labels.insertCell(0),
+    labels.insertCell(1),
+    labels.insertCell(2),
+    labels.insertCell(3),
+    ]
+    labelcells.forEach(element => {
+      element.classList.add("tableheadings");
+    });
+    labelcells[0].innerHTML = "Weapon:";
+    labelcells[1].innerHTML = "Bundle size:";
+    labelcells[2].innerHTML = "Price:";
+    labelcells[3].innerHTML = "Inventory:";
+    let doneButtonContainer = document.createElement("DIV");
+    doneButtonContainer.style.width="80%";
+    doneButtonContainer.style.margin="auto";    
+    let doneButton = document.createElement("BUTTON");
     container.appendChild(table);
+    container.appendChild(doneButtonContainer);
+    doneButtonContainer.appendChild(doneButton);
+    doneButton.onclick = function(){ doneShopping();};
+    doneButton.innerHTML = "DONE";
+    doneButton.style.float = "right";
+    doneButton.style.fontSize="26px";
+    doneButton.style.marginRight="3px";
+    doneButton.classList.add("btn");
+    doneButton.classList.add("btn-primary");
     Object.keys(WEAPON_TYPES).forEach(element => {
       if(player.money >= WEAPON_TYPES[element].cost){
-      var currentAmmo = getCurrentAmmo(element,weapons);
-      var row = table.insertRow(-1);
+      let currentAmmo = getCurrentAmmo(element,weapons);
+      let row = table.insertRow(-1);
       row.width = table.width;
       row.classList.add("btn");
       row.classList.add("btn-primary");
       row.style.display="table-row";
       row.type="button";
-      var cell0 = row.insertCell(0);
-      var cell1 = row.insertCell(1);
-      var cell2 = row.insertCell(2);
-      var cell3 = row.insertCell(3);
-      cell0.innerHTML = WEAPON_TYPES[element].name;
-      cell1.innerHTML = WEAPON_TYPES[element].bundle;
-      cell2.innerHTML = WEAPON_TYPES[element].cost;
-      cell3.innerHTML = getCurrentAmmo(element,weapons);
+      let cells=[
+      row.insertCell(0),
+      row.insertCell(1),
+      row.insertCell(2),
+      row.insertCell(3),
+      ]
+      cells.forEach(element => {
+        element.classList.add("btnspec");
+      });
+      cells[0].innerHTML = WEAPON_TYPES[element].name;
+      cells[1].innerHTML = WEAPON_TYPES[element].bundle;
+      cells[2].innerHTML = WEAPON_TYPES[element].cost;
+      cells[3].innerHTML = getCurrentAmmo(element,weapons);
         row.onclick = function(){
           currentAmmo = getCurrentAmmo(element,weapons);
           if(currentAmmo==0){
@@ -132,7 +189,7 @@ function refreshShop(container,player){
         };
       }
     });
-    document.body.appendChild(container);
+    hasShoppedThisRound = true;   
 } 
 
 function initPlayers() {
@@ -145,7 +202,7 @@ function initPlayers() {
       c: color, cb: borderColor,
       p: PLAYER_INITIAL_POWER,
       tools: PLAYER_STARTING_TOOLS.map(x => ({...x})), // FIXME: Ghetto clone
-      weapons: PLAYER_STARTING_WEAPONS.map(x => ({...x})), // FIXME: Ghetto clone
+      weapons: PLAYER_STARTING_WEAPONS.map(x => ({...x})),
       currentWeapon: 0,
       energy: PLAYER_MAX_ENERGY,
       shield: {type:'springShield', energy:SHIELD_TYPES.springShield.energy},
@@ -162,6 +219,48 @@ function initPlayers() {
   // Positions
   for (let i=0; i<PLAYER_COLORS.length; i++) {
     const player = players[i];
+    player.x = 50 + (W-100) / 5 * i;
+    player.y = landHeight(terrain, player.x) + 1;
+    player.a = player.x > W/2 ? 45 : 180-45;
+    clipTerrain(terrain, (ctx) => drawRect(ctx, player.x-4, 0, 8, player.y, ctx.color));
+  }
+}
+function initRound() {
+  hasShoppedThisRound = false;
+  for (let i=0; i<PLAYER_COLORS.length; i++) {
+    //const [color, borderColor] = PLAYER_COLORS[i];
+    let temp
+    temp ={
+      dead: false,
+      x:0, y:0, a:0,
+      //c: color, cb: borderColor,
+      p: PLAYER_INITIAL_POWER,
+      tools: PLAYER_STARTING_TOOLS.map(x => ({...x})), // FIXME: Ghetto clone
+      //weapons: PLAYER_STARTING_WEAPONS.map(x => ({...x})),
+      currentWeapon: 0,
+      energy: PLAYER_MAX_ENERGY,
+      shield: {type:'springShield', energy:SHIELD_TYPES.springShield.energy},
+      //ai: i !== 0 ? sample(Object.keys(AI_TYPES)) : undefined,
+      parachute: null,
+      fallHeight: 0,
+      //money: PLAYER_STARTING_MONEY,
+    };
+    Object.keys(temp).forEach(element => {
+      players[i][element]=temp[element];
+      console.log(players[i]["money"]);
+    });
+  }
+
+  // Randomize positions
+  //players = shuffle(players);
+  let turnOrder = [];
+  for(let j = 0; j < players.length; j++){
+    turnOrder.push(j);
+  }
+  turnOrder = shuffle(turnOrder);
+  // Positions
+  for (let i=0; i<PLAYER_COLORS.length; i++) {
+    const player = players[turnOrder[i]];
     player.x = 50 + (W-100) / 5 * i;
     player.y = landHeight(terrain, player.x) + 1;
     player.a = player.x > W/2 ? 45 : 180-45;
@@ -188,11 +287,13 @@ function update() {
   }
 
   else if (state === 'start-turn') {
-    if(turn <= players.length){    
+    counter.innerHTML=`Round: ${round}, Turn: ${turn}`;
+    if(turn < 1){    
     shop();
     state = 'shop';
     }
     else{
+      showLayers();
       state = 'aim';
     }
   }
@@ -356,6 +457,7 @@ function update() {
     explosions.push(explosionType.create(explosionSpec, x, y));
     createParticles(x, y, PLAYER_EXPLOSION_PARTICLE_POWER, c);
     dyingPlayer.dead = true;
+    deathorder.push(dyingPlayer);
     state = 'explosions';
   }
 
@@ -388,20 +490,47 @@ function update() {
   }
 
   else if (state === 'player-win') {
-    if (key('Enter')) state = 'start-game';
-    idle = true;
+    handleTransition();
   }
 
   else if (state === 'game-over') {
-    if (key('Enter')) state = 'start-game';
-    idle = true;
+    handleTransition();
   }
 
   else {
     throw new Error(`Invalid state, ${state}`);
   }
 }
-
+function handleTransition(){
+  if(round < TOTAL_ROUNDS){
+    round++;
+    grantWinMoney();
+    state = 'start-game'
+    hideLayers();
+  }
+  else{
+    
+    if (key('Enter')) state = 'start-game';
+    idle = true;
+  }
+}
+function grantWinMoney(){
+  let offset = 1;
+  let notdead = players.find(x => !x.dead);
+  if(notdead !== undefined){
+    deathorder.push(notdead);
+  }
+  deathorder[deathorder.length-offset]["money"] += PRIZE_FIRST_PLACE;
+  deathorder[deathorder.length-(offset+1)]["money"] += PRIZE_SECOND_PLACE;
+  deathorder[deathorder.length-(offset+2)]["money"] += PRIZE_THIRD_PLACE;
+  players.forEach(element => {
+    if(element["money"]< MINMONEY)
+    {
+      element["money"]= MINMONEY;
+    }
+  });
+  deathorder = [];
+}
 export function createParticles(x, y, p, c) {
   for (let i = 0; i < PARTICLE_AMOUNT; i++) {
     particles.push({
@@ -643,5 +772,12 @@ function getCurrentWeaponIndex(id,currentWeapons){
     index ++;
   });
   return result;
+}
+export function debug(){
+players.forEach(element => {
+    if(element.ai){
+      element.energy = 0;
+    }
+  });
 }
 
